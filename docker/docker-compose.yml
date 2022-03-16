@@ -1,0 +1,47 @@
+version: '3'
+
+networks:
+    laravel:
+
+
+services:
+    apache:
+        image: httpd:2.4
+        container_name: apache_server
+        ports:
+            -  "8081:80"
+        volumes:
+            - ./src:/var/www/html
+            - ../../Twitter/public/:/usr/local/apache2/htdocs/
+        depends_on:
+            - pgsql
+            - php
+        networks:
+            - laravel
+
+    pgsql:
+        image: postgres:14
+        container_name: pgsql_db
+        restart: unless-stopped
+        tty: true
+        ports:
+            -   "54321:5432"
+        volumes:
+            -   ./pgsql:/var/lib/pgsql
+        environment:
+            PGPASSWORD: 'admin'
+            POSTGRES_DB: 'twitter'
+            POSTGRES_USER: 'admin'
+            POSTGRES_PASSWORD: 'admin'
+        networks:
+            - laravel
+
+    php:
+        image: php:8-cli
+        container_name: php
+        volumes:
+            -   ./src:/var/www/html
+        ports:
+            -  "9000:9000"
+        networks:
+            - laravel
